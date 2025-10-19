@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Months Game | महिन्यांची खेळ</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    text-align: center;
+    background: #f0f8ff;
+  }
+  h1 { margin-bottom: 10px; }
+  input, button { padding: 10px; font-size: 16px; margin: 5px; }
+  #game { display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+  .month {
+    padding: 10px 15px;
+    margin: 5px;
+    background: #87cefa;
+    color: white;
+    border-radius: 5px;
+    cursor: grab;
+    user-select: none;
+  }
+  .dropzone {
+    width: 120px;
+    height: 40px;
+    margin: 5px;
+    border: 2px dashed #87cefa;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+  }
+  #scoreBoard { margin-top: 20px; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<h1>Months Game | महिन्यांची खेळ</h1>
+
+<label>Enter Your Name / नाव: </label>
+<input type="text" id="playerName" placeholder="Your Name">
+<button onclick="startGame()">Start Game | खेळ सुरु करा</button>
+
+<div id="timer">Time: 0s</div>
+<div id="game"></div>
+<div id="scoreBoard">Score: 0</div>
+
+<script>
+const englishMonths = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const marathiMonths = ["जानेवारी","फेब्रुवारी","मार्च","एप्रिल","मे","जून","जुलै","ऑगस्ट","सप्टेंबर","ऑक्टोबर","नोव्हेंबर","डिसेंबर"];
+
+let score = 0;
+let startTime;
+let timerInterval;
+
+function startGame() {
+  const name = document.getElementById('playerName').value.trim();
+  if(name === "") { alert("Please enter your name / कृपया नाव टाका"); return; }
+  
+  score = 0;
+  document.getElementById('scoreBoard').innerText = "Score: 0";
+  
+  startTime = new Date();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(updateTimer, 1000);
+
+  const gameDiv = document.getElementById('game');
+  gameDiv.innerHTML = "";
+  
+  // Shuffle English months
+  const shuffledEnglish = [...englishMonths].sort(()=>Math.random()-0.5);
+  
+  shuffledEnglish.forEach((month, i) => {
+    // Draggable month
+    const monthDiv = document.createElement('div');
+    monthDiv.className = 'month';
+    monthDiv.innerText = month;
+    monthDiv.draggable = true;
+    monthDiv.id = "month-" + i;
+    monthDiv.addEventListener('dragstart', dragStart);
+    gameDiv.appendChild(monthDiv);
+    
+    // Dropzone for Marathi month
+    const dropDiv = document.createElement('div');
+    dropDiv.className = 'dropzone';
+    dropDiv.id = "drop-" + i;
+    dropDiv.innerText = marathiMonths[i];
+    dropDiv.addEventListener('dragover', dragOver);
+    dropDiv.addEventListener('drop', drop);
+    gameDiv.appendChild(dropDiv);
+  });
+}
+
+function updateTimer() {
+  const now = new Date();
+  const diff = Math.floor((now - startTime)/1000);
+  document.getElementById('timer').innerText = "Time: " + diff + "s";
+}
+
+function dragStart(e) {
+  e.dataTransfer.setData("text", e.target.id);
+}
+
+function dragOver(e) {
+  e.preventDefault();
+}
+
+function drop(e) {
+  e.preventDefault();
+  const draggedId = e.dataTransfer.getData("text");
+  const draggedDiv = document.getElementById(draggedId);
+  
+  // Check match
+  const dropIdNum = e.target.id.split('-')[1];
+  const monthNum = draggedId.split('-')[1];
+  
+  if(dropIdNum === monthNum) {
+    e.target.style.backgroundColor = "#32cd32"; // Green for correct
+    draggedDiv.style.display = "none";
+    score++;
+    document.getElementById('scoreBoard').innerText = "Score: " + score;
+  } else {
+    e.target.style.backgroundColor = "#ff4500"; // Red for wrong
+    setTimeout(()=>{ e.target.style.backgroundColor = "#87cefa"; }, 500);
+  }
+}
+</script>
+
+</body>
+</html>
